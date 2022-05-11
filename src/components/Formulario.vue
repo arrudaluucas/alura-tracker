@@ -35,7 +35,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from "vue";
+import { computed, defineComponent, ref } from "vue";
 import TemporizadorTracker from "./Temporizador.vue";
 import { useStore } from "vuex";
 import { key } from "@/store";
@@ -48,24 +48,16 @@ export default defineComponent({
     TemporizadorTracker,
   },
   emits: ["aoSalvarTarefa"],
-  data() {
-    return {
-      descricao: "",
-      idProjeto: "",
-    };
-  },
-  setup() {
-    const store = useStore(key);
-    return {
-      projetos: computed(() => store.state.projetos),
-      store,
-    };
-  },
-  methods: {
-    finalizarTarefa(tempoDecorrido: number): void {
-      const projeto = this.projetos.find((p) => p.id == this.idProjeto);
+  setup(props, { emit }) {
+    const descricao = ref("")
+    const idProjeto = ref("")
+    const store = useStore(key); 
+    const projetos = computed(() => store.state.projeto.projetos)
+
+    const finalizarTarefa = (tempoDecorrido: number): void => {
+      const projeto = projetos.value.find((p) => p.id == idProjeto.value);
       if (!projeto) {
-        this.store.commit(NOTIFICAR, {
+        store.commit(NOTIFICAR, {
           titulo: "Ops!.",
           texto: "Selecione um projeto antes de finalizar a tarefa!",
           tipo: TipoNotificacao.FALHA,
@@ -74,13 +66,20 @@ export default defineComponent({
         return
       }
 
-      this.$emit("aoSalvarTarefa", {
+      emit("aoSalvarTarefa", {
         duracaoEmSegundos: tempoDecorrido,
-        descricao: this.descricao,
-        projeto: this.projetos.find((proj) => proj.id == this.idProjeto),
+        descricao: descricao.value,
+        projeto: projetos.value.find((proj) => proj.id == idProjeto.value),
       });
-      this.descricao = "";
-    },
+      descricao.value = "";
+    }
+    
+    return {
+      descricao,
+      idProjeto,
+      finalizarTarefa,
+      projetos
+    };
   },
 });
 </script>

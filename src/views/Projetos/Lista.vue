@@ -39,20 +39,21 @@
 <script lang="ts">
 import { computed, defineComponent } from "vue";
 import { useStore } from "@/store";
-import { EXCLUIR_PROJETO } from "@/store/tipo-mutacoes";
+import { OBTER_PROJETOS, REMOVER_PROJETOS } from "@/store/tipo-acoes";
 
 export default defineComponent({
   name: "ProjetoTracker",
   setup() {
     const store = useStore();
+    store.dispatch(OBTER_PROJETOS)
     return {
-      projetos: computed(() => store.state.projetos),
+      projetos: computed(() => store.state.projeto.projetos),
       store
     };
   },
   methods: {
     excluir (id: string) {
-      this.store.commit(EXCLUIR_PROJETO, id)
+      this.store.dispatch(REMOVER_PROJETOS, id)
     }
   }
 });
